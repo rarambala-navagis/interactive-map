@@ -3,7 +3,7 @@ export default class MapDataContainer {
     this.markers = [];
     this.polygons = [];
     this.infowindows = [];
-    this.markerlisteners = [];
+    this.markerListeners = [];
     this.mapListeners = [];
     this.polygonListeners = []
   }

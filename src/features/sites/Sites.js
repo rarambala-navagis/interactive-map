@@ -50,21 +50,46 @@ export class Sites extends Component {
         tempCoordinates.push({ lat: parseFloat(site.coordinates[i][1]), lng: parseFloat(site.coordinates[i][0]) });
     }
 
-    this.maphelper.createPolygon(dataContainer,tempCoordinates,{id: siteName,strokeColor: "#FF0000",fillColor: "#FF0000"});
-    window.navmap.setCenter(this.maphelper.getPolygonCenter(site.coordinates));
-    window.navmap.setZoom(7);
-
-    //add the onclick listener
-    let polygon = dataContainer.polygons.filter( m => (m.uiid === siteName))[0];
-
+    // Start Edit by Rex
+    let center = this.maphelper.getPolygonCenter(site.coordinates);
     let that = this;
-    dataContainer.polygonListeners.push(polygon.addListener('click', function(e) {      
-      that.setState({
-        showInfoWindow: true, 
-        infowindowData: site.properties,
-        siteDetailLocation: {position:"absolute", top:e.va.pageY, left: e.va.pageX}
-      });
-    }));
+    
+    if(window.navmap.getZoom() <= 15){
+
+      this.maphelper.createMarker(dataContainer,center.lat(),center.lng(),{id: siteName,title: siteName,icon: "http://192.168.107.101:8080/asset_icons/marker.png"})
+
+       //add the onclick listener
+      let marker = dataContainer.markers.filter( m => (m.uiid === siteName))[0];
+
+      dataContainer.markerListeners.push(marker.addListener('click', function(e) {      
+        that.setState({
+          showInfoWindow: true, 
+          infowindowData: site.properties,
+          siteDetailLocation: {position:"absolute", top:e.va.pageY, left: e.va.pageX}
+        });
+      }));
+
+    } else {
+
+      this.maphelper.createPolygon(dataContainer,tempCoordinates,{id: siteName,strokeColor: "#FF0000",fillColor: "#FF0000"});
+      window.navmap.setCenter(center);
+
+      //window.navmap.setZoom(7);
+
+      //add the onclick listener
+      let polygon = dataContainer.polygons.filter( m => (m.uiid === siteName))[0];
+
+      dataContainer.polygonListeners.push(polygon.addListener('click', function(e) {      
+        that.setState({
+          showInfoWindow: true, 
+          infowindowData: site.properties,
+          siteDetailLocation: {position:"absolute", top:e.va.pageY, left: e.va.pageX}
+        });
+      }));
+
+    }
+
+    // End Edit by Rex
 
     if(Object.keys(dataContainer.mapListeners).length === 0 ){
           dataContainer.mapListeners.push(window.navmap.addListener('click', function(){

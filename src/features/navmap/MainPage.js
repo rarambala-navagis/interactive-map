@@ -18,6 +18,7 @@ export class MainPage extends Component {
   constructor(props){
     super(props);
 
+    this.hostDataUrl = "http://192.168.107.101:8080/";
     this.mapHelper = new Maphelper();
     this.mapDataContainer = new MapDataContainer();
 
