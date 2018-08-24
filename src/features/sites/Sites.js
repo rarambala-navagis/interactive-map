@@ -4,7 +4,6 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import * as actions from './redux/actions';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import SitesService from '../../services/SitesService';
 import Maphelper from '../navmap/Maphelper';
 import Site from './Site';
 
@@ -16,7 +15,6 @@ export class Sites extends Component {
 
   constructor(props){
     super(props);
-    this.sitesService = new SitesService();
 
     this.maphelper = new Maphelper();
 
@@ -40,7 +38,7 @@ export class Sites extends Component {
   }
 
   loadSiteInMap(siteName){
-    let sites = this.sitesService.getSites();
+    let sites = this.props.sitesService.getSites();
     let dataContainer = this.props.mapDataContainer;
 
     let site = sites.filter(s => s.name === siteName)[0];
@@ -51,23 +49,30 @@ export class Sites extends Component {
     }
 
     // Start Edit by Rex
-    let center = this.maphelper.getPolygonCenter(site.coordinates);
+    let center = site.center;
     let that = this;
     
     if(window.navmap.getZoom() <= 15){
+      console.log('im creating marker..',site,center);
 
-      this.maphelper.createMarker(dataContainer,center.lat(),center.lng(),{id: siteName,title: siteName,icon: "http://192.168.107.101:8080/asset_icons/marker.png"})
+      this.maphelper.createMarker(dataContainer,center.lat,center.lng,{id: siteName,title: siteName,icon: "http://192.168.107.101:8080/asset_icons/marker.png"});
+      this.maphelper.setCenterMarkers(dataContainer);
+      //window.navmap.setZoom(3);
 
-       //add the onclick listener
+      //add the onclick listener
       let marker = dataContainer.markers.filter( m => (m.uiid === siteName))[0];
 
-      dataContainer.markerListeners.push(marker.addListener('click', function(e) {      
+      dataContainer.markerListeners.push(marker.addListener('click', function(e) {  
+        console.log(siteName);    
         that.setState({
-          showInfoWindow: true, 
+          showInfoWindow: true,
+          activeSite: siteName, 
           infowindowData: site.properties,
           siteDetailLocation: {position:"absolute", top:e.va.pageY, left: e.va.pageX}
         });
       }));
+
+      console.log('after create marker', dataContainer);
 
     } else {
 
@@ -92,11 +97,11 @@ export class Sites extends Component {
     // End Edit by Rex
 
     if(Object.keys(dataContainer.mapListeners).length === 0 ){
-          dataContainer.mapListeners.push(window.navmap.addListener('click', function(){
+          /*dataContainer.mapListeners.push(window.navmap.addListener('click', function(){
               that.setState({
                 showInfoWindow: false
               }); 
-            }));
+            }));*/
           // dataContainer.mapListeners.push(window.navmap.addListener('zoom_changed', function(){
             
           //   if(window.navmap.getZoom() >= 9){
@@ -115,8 +120,15 @@ export class Sites extends Component {
 
   unloadSiteInMap(siteName){      
       let dataContainer = this.props.mapDataContainer;
-      this.maphelper.hidePolygon(dataContainer,siteName);
-      this.maphelper.removeAllMarkers(dataContainer);
+
+      if(window.navmap.getZoom() <= 15){
+
+        this.maphelper.removeAllMarkers(dataContainer);
+      } else {
+
+        this.maphelper.hidePolygon(dataContainer,siteName);
+      }
+
       this.setState({
         showInfoWindow: false, 
         isShowAssets: false
@@ -148,12 +160,20 @@ export class Sites extends Component {
   }
 
   render() {
-    var sites = this.sitesService.getSites();
+    let dataContainer = this.props.mapDataContainer;
+    this.maphelper.cleanup(dataContainer);
+    var sites = this.props.sitesService.getSites();
     let sitesList = sites.map((site,index)=> {
+
       return (
           <tr key={"sites" + index}><td><input type="checkbox" onChange={this.selectSite.bind(this)} site={site.name}/></td><td>{site.name}</td></tr>
       );
     });
+
+    if(this.state.activeSite != ''){
+      console.log('show al the markwers..');
+      this.loadSiteInMap(this.state.activeSite);
+    }
 
     if(this.props.isShown){
       return (

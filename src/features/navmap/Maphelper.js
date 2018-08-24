@@ -18,6 +18,7 @@ export default class Maphelper {
       });
 
       dataContainer.markers.push(marker);
+      console.log('done creating marker..');
   }
 
   setMarkerInfoWindow(dataContainer,marker_id,contentString){
@@ -47,6 +48,20 @@ export default class Maphelper {
       dataContainer.markers.map( m => { m.setMap(null); return m;});
       dataContainer.markers = [];
     }
+  }
+
+  setCenterMarkers(dataContainer){
+    let bounds = new window.google.maps.LatLngBounds();
+    console.log('asdasdasd',dataContainer.markers);
+
+    for (var i = 0; i < dataContainer.markers.length; i++) {
+      bounds.extend(dataContainer.markers[i].position);
+    }
+
+    window.navmap.fitBounds(bounds);
+    if(dataContainer.markers.length == 1){
+      window.navmap.setZoom(3);
+    }   
   }
 
   //---------------------------------------------

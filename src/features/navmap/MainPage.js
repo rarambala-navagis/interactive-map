@@ -8,6 +8,7 @@ import NavToolbar from './NavToolbar';
 import Maphelper from './Maphelper';
 import MapDataContainer from './MapDataContainer';
 import Sites from '../sites/Sites';
+import SitesService from '../../services/SitesService';
 import TrendingCharts from '../trending-charts/TrendingCharts';
 
 export class MainPage extends Component {
@@ -21,11 +22,12 @@ export class MainPage extends Component {
     this.hostDataUrl = "http://192.168.107.101:8080/";
     this.mapHelper = new Maphelper();
     this.mapDataContainer = new MapDataContainer();
+    this.sitesService = new SitesService();
 
     this.state = {
       zoom: 3,
       map:{},
-      showSitesWindow: false,
+      showSitesWindow: true,
       showChart: false
     }
   }
@@ -61,7 +63,8 @@ export class MainPage extends Component {
          <NavToolbar showSites={this.openSitesInfoWindow.bind(this)} showCharts={this.showTrendingCharts.bind(this)}/>
        );
 
-       sites = (<Sites mapDataContainer={this.mapDataContainer} 
+       sites = (<Sites mapDataContainer={this.mapDataContainer}
+                        sitesService={this.sitesService}
                         isShown={this.state.showSitesWindow} 
                         closeWindow={this.closeSitesInfoWindow.bind(this)} 
                         showCharts={this.showTrendingCharts.bind(this)}
